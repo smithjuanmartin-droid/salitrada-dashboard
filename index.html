@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salitrada · Meta Ads</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0c0c15; --card: #131322; --border: #1e1e30; --border2: #262638;
+      --text: #e8e8f2; --muted: #6a6a88;
+      --green: #10b981; --red: #ef4444; --gold: #f59e0b; --indigo: #818cf8;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; font-size: 14px; line-height: 1.5; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+    header { border-bottom: 1px solid var(--border); background: rgba(19,19,34,.9); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 10; }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; gap: 16px; flex-wrap: wrap; }
+    .header-logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(129,140,248,.15); border: 1px solid rgba(129,140,248,.3); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+    .header-title { font-size: 15px; font-weight: 700; }
+    .header-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border2); background: rgba(255,255,255,.04); color: var(--text); white-space: nowrap; }
+    .badge-blue  { background: rgba(129,140,248,.12); border-color: rgba(129,140,248,.25); color: var(--indigo); }
+    .badge-green { background: rgba(16,185,129,.12);  border-color: rgba(16,185,129,.25);  color: var(--green); }
+    .badge-muted { color: var(--muted); }
+    .period-selector { display: flex; gap: 4px; background: rgba(255,255,255,.04); border: 1px solid var(--border2); border-radius: 10px; padding: 3px; }
+    .period-btn { font-size: 11px; font-weight: 600; padding: 5px 11px; border-radius: 7px; border: none; cursor: pointer; background: transparent; color: var(--muted); transition: all .18s; white-space: nowrap; }
+    .period-btn:hover { color: var(--text); background: rgba(255,255,255,.06); }
+    .period-btn.active { background: var(--card); color: var(--text); box-shadow: 0 1px 6px rgba(0,0,0,.4); border: 1px solid var(--border2); }
+    main { padding: 32px 0; }
+    .section { margin-bottom: 32px; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .section-title { font-size: 18px; font-weight: 700; white-space: nowrap; }
+    .section-divider { flex: 1; height: 1px; background: var(--border); }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+    .card-title { font-size: 15px; font-weight: 700; }
+    .card-sub { font-size: 12px; color: var(--muted); margin-top: 2px; margin-bottom: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-insights { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 960px) { .grid-4 { grid-template-columns: 1fr 1fr; } .grid-2 { grid-template-columns: 1fr; } }
+    @media (max-width: 760px) { .grid-insights { grid-template-columns: 1fr; } }
+    @media (max-width: 560px) { .grid-4 { grid-template-columns: 1fr; } }
+    .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 22px; transition: transform .2s, box-shadow .2s; }
+    .kpi-card:hover { transform: translateY(-2px); }
+    .kpi-card.gi { box-shadow: 0 0 28px rgba(129,140,248,.18); }
+    .kpi-card.gg { box-shadow: 0 0 28px rgba(16,185,129,.18); }
+    .kpi-card.go { box-shadow: 0 0 28px rgba(245,158,11,.18); }
+    .kpi-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+    .kpi-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .kpi-label { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 4px; }
+    .kpi-value { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -.5px; }
+    .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+    .alert { border-radius: 14px; padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; margin-bottom: 32px; }
+    .chart-box    { position: relative; height: 240px; width: 100%; }
+    .chart-box-lg { position: relative; height: 220px; width: 100%; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { border-bottom: 1px solid var(--border); }
+    th { text-align: left; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; padding: 0 12px 12px 0; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid rgba(255,255,255,.03); transition: background .15s; }
+    tbody tr:hover { background: rgba(255,255,255,.02); }
+    td { padding: 11px 12px 11px 0; white-space: nowrap; }
+    tfoot tr { border-top: 1px solid var(--border2); }
+    tfoot td { padding: 14px 12px 0 0; font-weight: 700; }
+    .cname { font-weight: 600; }
+    .cfull  { font-size: 10px; color: var(--muted); margin-top: 2px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    /* Insight cards */
+    .insight-card { border-radius: 14px; padding: 20px; border: 1px solid; }
+    .insight-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .insight-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .insight-title { font-size: 14px; font-weight: 700; }
+    .insight-list { display: flex; flex-direction: column; gap: 12px; }
+    .insight-item-name { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+    .insight-item-text { font-size: 12px; color: var(--muted); line-height: 1.55; }
+    footer { border-top: 1px solid var(--border); padding: 20px 0; margin-top: 8px; }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="header-logo">
+        <div class="logo-icon">🎯</div>
+        <div>
+          <div class="header-title">Salitrada</div>
+          <div class="header-sub">Meta Ads · Dashboard de Campañas</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="period-selector">
+          <button class="period-btn" data-period="1d">Ayer</button>
+          <button class="period-btn" data-period="7d">7 días</button>
+          <button class="period-btn" data-period="14d">14 días</button>
+          <button class="period-btn active" data-period="30d">30 días</button>
+        </div>
+        <span class="badge badge-blue">Meta Ads</span>
+        <span class="badge badge-green" id="hdr-updated"></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Resumen Ejecutivo</h2>
+        <div class="section-divider"></div>
+        <span class="badge badge-muted" id="hdr-period"></span>
+      </div>
+      <div class="grid-4" id="kpi-grid"></div>
+    </section>
+
+    <div id="alert-box"></div>
+
+    <section class="section">
+      <div class="section-header"><h2 class="section-title">Análisis de Rendimiento</h2><div class="section-divider"></div></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Tendencia</div>
+          <div class="card-sub" id="trend-sub"></div>
+          <div class="chart-box"><canvas id="trendChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">ROAS por Campaña</div>
+          <div class="card-sub">Campañas con conversiones trackeadas · Break-even en 1x</div>
+          <div class="chart-box"><canvas id="roasChart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header"><h2 class="section-title">Detalle de Campañas</h2><div class="section-divider"></div></div>
+      <div class="card">
+        <div class="table-wrap" id="camp-table"></div>
+        <div class="grid-insights" id="insights-grid" style="margin-top:28px;padding-top:24px;border-top:1px solid var(--border)"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header"><h2 class="section-title">Gasto vs Ingresos</h2><div class="section-divider"></div></div>
+      <div class="card">
+        <div class="card-sub">Campañas sin tracking de conversiones muestran $0 en ingresos atribuidos</div>
+        <div class="chart-box-lg"><canvas id="srChart"></canvas></div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <span>Salitrada Swimwear · Meta Ads Dashboard</span>
+      <span id="ftr-info"></span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+/* ====== DATA START ====== */
+const DATA = {
+  lastUpdated: "2026-04-20T09:00:00",
+  daily: [
+    {d:"22 Mar",spend:57899,roas:3.94}, {d:"23 Mar",spend:53224,roas:7.83}, {d:"24 Mar",spend:57049,roas:null},
+    {d:"25 Mar",spend:46772,roas:3.16}, {d:"26 Mar",spend:52061,roas:null}, {d:"27 Mar",spend:53855,roas:null},
+    {d:"28 Mar",spend:37314,roas:null}, {d:"29 Mar",spend:53192,roas:5.25}, {d:"30 Mar",spend:40884,roas:3.82},
+    {d:"31 Mar",spend:54186,roas:null}, {d:"1 Abr", spend:61482,roas:null}, {d:"2 Abr", spend:75599,roas:4.88},
+    {d:"3 Abr", spend:39169,roas:7.61}, {d:"4 Abr", spend:28396,roas:7.08}, {d:"5 Abr", spend:49749,roas:2.60},
+    {d:"6 Abr", spend:48105,roas:null}, {d:"7 Abr", spend:49723,roas:10.82},{d:"8 Abr", spend:58790,roas:17.12},
+    {d:"9 Abr", spend:54787,roas:null}, {d:"10 Abr",spend:56118,roas:null}, {d:"11 Abr",spend:53010,roas:null},
+    {d:"12 Abr",spend:63821,roas:4.66}, {d:"13 Abr",spend:57398,roas:3.64}, {d:"14 Abr",spend:57126,roas:1.45},
+    {d:"15 Abr",spend:59531,roas:6.26}, {d:"16 Abr",spend:56298,roas:1.27}, {d:"17 Abr",spend:54868,roas:3.83},
+    {d:"18 Abr",spend:49544,roas:5.72}, {d:"19 Abr",spend:67894,roas:4.33}, {d:"20 Abr",spend:18573,roas:null},
+  ],
+  periods: {
+    "1d": {
+      label:"Ayer", dateRange:"19 Abr 2026", days:1,
+      summary:{ totalSpend:67895, totalRevenue:294000, blendedRoas:4.33, trackedRoas:5.51, campaignCount:4 },
+      campaigns:[
+        { name:"Ad+ V2026",          full:"Verano 2026 · Nueva Temporada · Ad+",           spend:53368.54, revenue:294000, roas:5.509, cpm:7702, ctr:3.67, cpc:210, reach:4062, freq:1.71, tracked:true  },
+        { name:"Carrito Abandonado", full:"Conversiones · Remarketing Carrito Abandonado",  spend:4135.33,  revenue:0,      roas:null,  cpm:8615, ctr:5.21, cpc:165, reach:221,  freq:2.17, tracked:false },
+        { name:"Interacción",        full:"Interacción · Aumentar Alcance Orgánico",         spend:5230.19,  revenue:0,      roas:null,  cpm:539,  ctr:0.91, cpc:59,  reach:9155, freq:1.06, tracked:false },
+        { name:"Rmkt V2026",         full:"Verano 2026 · Nueva Temporada · Remarketing",     spend:5161.04,  revenue:0,      roas:null,  cpm:9775, ctr:3.98, cpc:246, reach:403,  freq:1.31, tracked:false },
+      ],
+    },
+    "7d": {
+      label:"Últ. 7 días", dateRange:"14 – 20 Abr 2026", days:7,
+      summary:{ totalSpend:402657, totalRevenue:1523794, blendedRoas:3.78, trackedRoas:4.79, campaignCount:4 },
+      campaigns:[
+        { name:"Ad+ V2026",          full:"Verano 2026 · Nueva Temporada · Ad+",           spend:317979.96, revenue:1523794, roas:4.792, cpm:9583, ctr:3.36, cpc:285, reach:9548,  freq:3.48, tracked:true  },
+        { name:"Carrito Abandonado", full:"Conversiones · Remarketing Carrito Abandonado",  spend:21161.84,  revenue:0,       roas:null,  cpm:7451, ctr:3.17, cpc:235, reach:507,   freq:5.60, tracked:false },
+        { name:"Interacción",        full:"Interacción · Aumentar Alcance Orgánico",         spend:35035.18,  revenue:0,       roas:null,  cpm:549,  ctr:0.89, cpc:62,  reach:57430, freq:1.11, tracked:false },
+        { name:"Rmkt V2026",         full:"Verano 2026 · Nueva Temporada · Remarketing",     spend:28480.38,  revenue:0,       roas:null,  cpm:9622, ctr:2.23, cpc:432, reach:1695,  freq:1.75, tracked:false },
+      ],
+    },
+    "14d": {
+      label:"Últ. 14 días", dateRange:"7 – 20 Abr 2026", days:14,
+      summary:{ totalSpend:787014, totalRevenue:3366034, blendedRoas:4.28, trackedRoas:5.07, campaignCount:4 },
+      campaigns:[
+        { name:"Ad+ V2026",          full:"Verano 2026 · Nueva Temporada · Ad+",           spend:620472.53, revenue:2968034, roas:4.784, cpm:8770, ctr:3.07, cpc:286, reach:16663, freq:4.25, tracked:true  },
+        { name:"Carrito Abandonado", full:"Conversiones · Remarketing Carrito Abandonado",  spend:43150.46,  revenue:398000,  roas:9.224, cpm:7266, ctr:3.00, cpc:242, reach:737,   freq:8.06, tracked:true  },
+        { name:"Interacción",        full:"Interacción · Aumentar Alcance Orgánico",         spend:68431.48,  revenue:0,       roas:null,  cpm:539,  ctr:0.83, cpc:65,  reach:103776,freq:1.22, tracked:false },
+        { name:"Rmkt V2026",         full:"Verano 2026 · Nueva Temporada · Remarketing",     spend:54959.27,  revenue:0,       roas:null,  cpm:8075, ctr:2.34, cpc:346, reach:3145,  freq:2.16, tracked:false },
+      ],
+    },
+    "30d": {
+      label:"Últ. 30 días", dateRange:"21 Mar – 20 Abr 2026", days:30,
+      summary:{ totalSpend:1566275, totalRevenue:5591755, blendedRoas:3.57, trackedRoas:4.51, campaignCount:5 },
+      campaigns:[
+        { name:"Ad+ V2026",          full:"Verano 2026 · Nueva Temporada · Ad+",           spend:1151351.93,revenue:5038239, roas:4.376, cpm:8243, ctr:3.28, cpc:251, reach:24698,  freq:5.66,  tracked:true  },
+        { name:"Carrito Abandonado", full:"Conversiones · Remarketing Carrito Abandonado",  spend:88381.30,  revenue:553516,  roas:6.263, cpm:7131, ctr:3.33, cpc:214, reach:1164,   freq:10.65, tracked:true  },
+        { name:"Interacción",        full:"Interacción · Aumentar Alcance Orgánico",         spend:136248.69, revenue:0,       roas:null,  cpm:540,  ctr:0.78, cpc:69,  reach:183173, freq:1.38,  tracked:false },
+        { name:"Rmkt V2026",         full:"Verano 2026 · Nueva Temporada · Remarketing",     spend:102295.53, revenue:0,       roas:null,  cpm:7613, ctr:2.63, cpc:290, reach:5399,   freq:2.49,  tracked:false },
+        { name:"V2025 Sale",         full:"Verano 2025 · Sale Trajes de Baño · Remarketing", spend:87997.66,  revenue:0,       roas:null,  cpm:6569, ctr:3.43, cpc:192, reach:4812,   freq:2.78,  tracked:false },
+      ],
+    },
+  },
+};
+/* ====== DATA END ====== */
+
+const fmtARS  = v => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(v);
+const fmtARSm = v => v>=1e6 ? '$'+(v/1e6).toFixed(2)+'M' : v>=1e3 ? '$'+Math.round(v/1e3)+'k' : fmtARS(v);
+const fmtROAS = v => v!=null ? v.toFixed(2)+'x' : '—';
+const fmtNum  = v => new Intl.NumberFormat('es-AR').format(Math.round(v));
+
+const G='#10b981', R='#ef4444', O='#f59e0b', I='#818cf8', M='#6a6a88';
+Chart.defaults.color = M;
+Chart.defaults.borderColor = '#1e1e30';
+Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+
+const lu = new Date(DATA.lastUpdated);
+const luStr = lu.toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'});
+document.getElementById('hdr-updated').textContent = 'Actualizado ' + luStr;
+document.getElementById('ftr-info').textContent = 'Datos: Meta Ads · ' + luStr;
+
+let trendChart, roasChart, srChart;
+
+// ── KPIs ─────────────────────────────────────────────────────────────────────
+function renderKPIs(p) {
+  const s = p.summary;
+  document.getElementById('kpi-grid').innerHTML = [
+    { label:'Gasto Total',         value:fmtARSm(s.totalSpend),   sub:s.campaignCount+' campañas activas',  icon:'💰', color:I, bg:'rgba(129,140,248,.15)', glow:'gi' },
+    { label:'Ingresos Atribuidos', value:fmtARSm(s.totalRevenue),  sub:'Conversiones trackeadas',           icon:'📈', color:G, bg:'rgba(16,185,129,.15)',  glow:'gg' },
+    { label:'ROAS Blended',        value:fmtROAS(s.blendedRoas),   sub:'Sobre gasto total de cuenta',       icon:'🎯', color:O, bg:'rgba(245,158,11,.15)',  glow:'go' },
+    { label:'ROAS Trackeado',      value:fmtROAS(s.trackedRoas),   sub:'Solo campañas con conversiones',    icon:'⚡', color:G, bg:'rgba(16,185,129,.15)',  glow:'gg' },
+  ].map(k=>`
+    <div class="kpi-card ${k.glow}">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="background:${k.bg}">${k.icon}</div>
+        <span class="badge badge-muted" style="font-size:10px">${p.dateRange}</span>
+      </div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value" style="color:${k.color}">${k.value}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>`).join('');
+}
+
+// ── Alert ─────────────────────────────────────────────────────────────────────
+function renderAlert(p) {
+  const untracked = p.campaigns.filter(c=>!c.tracked && c.spend>p.summary.totalSpend*0.06);
+  const sp = untracked.reduce((s,c)=>s+c.spend,0);
+  document.getElementById('alert-box').innerHTML = sp > 0 ? `
+    <div class="alert" style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.22);margin-bottom:32px">
+      <div style="font-size:18px;flex-shrink:0;margin-top:1px">⚠️</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:${R}">${fmtARSm(sp)} en campañas sin ROAS registrado</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">${untracked.map(c=>c.name).join(', ')} — Verificar pixel y eventos de compra.</div>
+      </div>
+    </div>` : '';
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+function renderTable(p) {
+  const sorted = [...p.campaigns].sort((a,b)=>(b.roas||0)-(a.roas||0));
+  const totS = p.campaigns.reduce((s,c)=>s+c.spend,0);
+  const totR = p.campaigns.reduce((s,c)=>s+c.revenue,0);
+  document.getElementById('camp-table').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Campaña</th><th>Estado</th><th>Gasto</th><th>Ingresos</th>
+        <th>ROAS</th><th>CPM</th><th>CTR</th><th>CPC</th><th>Frecuencia</th><th>Reach</th>
+      </tr></thead>
+      <tbody>${sorted.map(c=>{
+        const rc = c.roas==null?M : c.roas>=4?G : c.roas>=2?O : R;
+        const fc = c.freq>8?R : c.freq>5?O : M;
+        return `<tr>
+          <td><div class="cname">${c.name}</div><div class="cfull">${c.full}</div></td>
+          <td><span class="status-pill" style="background:rgba(16,185,129,.1);color:${G}"><span class="dot" style="background:${G}"></span>Activa</span></td>
+          <td class="num" style="color:${M}">${fmtARS(c.spend)}</td>
+          <td class="num" style="color:${c.revenue>0?G:M}">${c.revenue>0?fmtARS(c.revenue):'—'}</td>
+          <td class="num" style="color:${rc};font-weight:700">${fmtROAS(c.roas)}</td>
+          <td class="num" style="color:${M}">${fmtARS(c.cpm)}</td>
+          <td class="num" style="color:${M}">${c.ctr.toFixed(2)}%</td>
+          <td class="num" style="color:${M}">${fmtARS(c.cpc)}</td>
+          <td class="num" style="color:${fc}">${c.freq.toFixed(2)}x</td>
+          <td class="num" style="color:${M}">${fmtNum(c.reach)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+      <tfoot><tr>
+        <td colspan="2">TOTAL</td>
+        <td class="num">${fmtARS(totS)}</td>
+        <td class="num" style="color:${G}">${fmtARS(totR)}</td>
+        <td class="num" style="color:${O}">${fmtROAS(p.summary.blendedRoas)}</td>
+        <td colspan="5"></td>
+      </tr></tfoot>
+    </table>`;
+}
+
+// ── Insights ──────────────────────────────────────────────────────────────────
+function renderInsights(p) {
+  const camps = p.campaigns;
+  const p30   = DATA.periods['30d'];
+  const is1d  = p.days === 1;
+  const sections = [];
+
+  // 1. Escalar
+  const scaleList = camps.filter(c => c.roas != null && c.roas >= 3.5 && c.freq < 6.5);
+  if (scaleList.length) {
+    sections.push({
+      icon:'🚀', color:G, bg:'rgba(16,185,129,.08)', border:'rgba(16,185,129,.22)',
+      title:'Escalar presupuesto',
+      items: scaleList.map(c => ({
+        name: c.name,
+        text: c.freq > 5
+          ? `ROAS ${c.roas.toFixed(2)}x · Frec. ${c.freq.toFixed(1)}x — Escalar con precaución: el ROAS justifica más presupuesto pero la frecuencia está llegando al límite. Agregar creatividades nuevas antes de subir el budget.`
+          : c.roas >= 5
+            ? `ROAS ${c.roas.toFixed(2)}x · Frec. ${c.freq.toFixed(1)}x — Candidata a escalar agresivamente (+30-50%). Retorno y frecuencia en zona óptima.`
+            : `ROAS ${c.roas.toFixed(2)}x · Frec. ${c.freq.toFixed(1)}x — Escalar gradualmente (+20-30% por semana) y monitorear que el ROAS no caiga más de un 15%.`,
+      })),
+    });
+  }
+
+  // 2. Reducir / revisar
+  const reviewItems = [];
+  // Pixel caído (estaba trackeada en 30d pero no en período actual)
+  camps.filter(c => !c.tracked && p30.campaigns.some(c30=>c30.name===c.name && c30.tracked))
+    .forEach(c => {
+      const c30 = p30.campaigns.find(x=>x.name===c.name);
+      reviewItems.push({ name: c.name,
+        text:`Sin ROAS en este período (en 30 días fue ${c30.roas.toFixed(2)}x). Posible falla en el pixel o audiencia de carrito agotada. Revisar Events Manager urgente antes de seguir invirtiendo.` });
+    });
+  // Campañas sin tracking con gasto relevante
+  camps.filter(c => !c.tracked && !p30.campaigns.some(c30=>c30.name===c.name && c30.tracked) && c.spend > p.summary.totalSpend * 0.05)
+    .forEach(c => {
+      const isOld = c.name.includes('2025');
+      reviewItems.push({ name: c.name,
+        text: isOld
+          ? `${fmtARSm(c.spend)} invertidos sin conversiones trackeadas. Campaña de temporada 2025 ya finalizada — evaluar pausar y reasignar ese presupuesto a Ad+ V2026.`
+          : `${fmtARSm(c.spend)} invertidos sin ROAS registrado. Configurar el evento de compra como objetivo o considerar pausar hasta tener tracking.` });
+    });
+  // ROAS bajo
+  camps.filter(c => c.roas!=null && c.roas < 2)
+    .forEach(c => reviewItems.push({ name:c.name,
+      text:`ROAS ${c.roas.toFixed(2)}x — debajo del umbral rentable recomendado (2x). Revisar creatividades, targeting y landing page.` }));
+  if (reviewItems.length) {
+    sections.push({
+      icon:'⬇️', color:O, bg:'rgba(245,158,11,.08)', border:'rgba(245,158,11,.22)',
+      title:'Reducir o revisar',
+      items: reviewItems,
+    });
+  }
+
+  // 3. Fatiga de anuncios (no aplica para 1d)
+  if (!is1d) {
+    const fatigueItems = [];
+    camps.forEach(c => {
+      if (c.freq > 8)
+        fatigueItems.push({ name:c.name, text:`Frecuencia ${c.freq.toFixed(2)}x — audiencia saturada. El mismo usuario ve el mismo anuncio demasiadas veces, lo que destruye el ROAS progresivamente. Expandir audiencia o pausar brevemente.` });
+      else if (c.freq > 5)
+        fatigueItems.push({ name:c.name, text:`Frecuencia ${c.freq.toFixed(2)}x — entrando en zona de fatiga. Si el CTR o el ROAS empezaron a bajar esta semana, es señal directa de fatiga creativa.` });
+    });
+    if (fatigueItems.length)
+      sections.push({ icon:'😴', color:R, bg:'rgba(239,68,68,.08)', border:'rgba(239,68,68,.22)', title:'Fatiga de anuncios', items:fatigueItems });
+  }
+
+  // 4. Agregar nuevos anuncios (no aplica para 1d)
+  if (!is1d) {
+    const creativeItems = [];
+    camps.forEach(c => {
+      if (c.freq > 8)
+        creativeItems.push({ name:c.name, text:`Urgente: frecuencia ${c.freq.toFixed(2)}x. Agregar mínimo 4-6 anuncios nuevos (distintos formatos: video, imagen, carrusel). Sin creatividades nuevas el ROAS va a seguir cayendo.` });
+      else if (c.freq > 4)
+        creativeItems.push({ name:c.name, text:`Frecuencia ${c.freq.toFixed(2)}x — agregar 2-3 creatividades nuevas de forma preventiva. Probar distintos hooks en el primer segundo del video o distintos visuales en imagen.` });
+      else if (c.freq > 3 && c.roas!=null)
+        creativeItems.push({ name:c.name, text:`Frecuencia ${c.freq.toFixed(2)}x — buen momento para ir preparando creatividades nuevas antes de que la fatiga impacte el ROAS.` });
+    });
+    if (creativeItems.length)
+      sections.push({ icon:'🎨', color:I, bg:'rgba(129,140,248,.08)', border:'rgba(129,140,248,.22)', title:'Agregar nuevos anuncios', items:creativeItems });
+  }
+
+  // Render
+  document.getElementById('insights-grid').innerHTML = sections.length === 0
+    ? `<div style="grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;padding:16px">Sin recomendaciones críticas para este período.</div>`
+    : sections.map(s => `
+        <div class="insight-card" style="background:${s.bg};border-color:${s.border}">
+          <div class="insight-head">
+            <div class="insight-icon" style="background:${s.bg};border:1px solid ${s.border}">${s.icon}</div>
+            <span class="insight-title" style="color:${s.color}">${s.title}</span>
+          </div>
+          <div class="insight-list">
+            ${s.items.map(item=>`
+              <div>
+                <div class="insight-item-name">${item.name}</div>
+                <div class="insight-item-text">${item.text}</div>
+              </div>`).join('')}
+          </div>
+        </div>`).join('');
+}
+
+// ── Trend Chart ───────────────────────────────────────────────────────────────
+function buildTrendChart(p) {
+  const slice = p.days === 1 ? DATA.daily.slice(-7) : DATA.daily.slice(-p.days);
+  document.getElementById('trend-sub').textContent = p.days === 1
+    ? 'Ayer destacado en contexto de últimos 7 días · Línea: ROAS atribuido'
+    : `Gasto diario últimos ${p.days} días · Línea: ROAS atribuido`;
+  const bgColors = slice.map((_,i) =>
+    p.days===1 && i===slice.length-2 ? 'rgba(129,140,248,.95)' : 'rgba(129,140,248,.35)');
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(document.getElementById('trendChart'), {
+    type:'bar',
+    data:{ labels:slice.map(d=>d.d), datasets:[
+      { label:'Gasto (miles ARS)', data:slice.map(d=>Math.round(d.spend/1000)),
+        backgroundColor:bgColors, borderColor:'rgba(129,140,248,.7)', borderWidth:1, borderRadius:3, yAxisID:'y1', order:2 },
+      { label:'ROAS', data:slice.map(d=>d.roas), type:'line',
+        borderColor:G, backgroundColor:'transparent', pointBackgroundColor:G, pointRadius:4, pointHoverRadius:6,
+        borderWidth:2.5, tension:0.35, yAxisID:'y2', order:1, spanGaps:false },
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:M,font:{size:11},usePointStyle:true,pointStyleWidth:8,padding:16}},
+        tooltip:{backgroundColor:'#1a1a2e',borderColor:'#2a2a45',borderWidth:1,padding:10,
+          callbacks:{label:ctx=>ctx.dataset.label==='ROAS'
+            ? ` ROAS: ${ctx.raw!=null?ctx.raw.toFixed(2)+'x':'—'}`
+            : ` Gasto: $${ctx.raw}k ARS`}},
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{color:M,font:{size:9},maxRotation:45,minRotation:45,maxTicksLimit:16}},
+        y1:{position:'left', grid:{color:'rgba(255,255,255,.04)'},ticks:{color:M,font:{size:10},callback:v=>'$'+v+'k'}},
+        y2:{position:'right',grid:{display:false},ticks:{color:G,font:{size:10},callback:v=>v+'x'},min:0},
+      },
+    },
+  });
+}
+
+// ── ROAS Chart ────────────────────────────────────────────────────────────────
+function buildRoasChart(p) {
+  const withRoas = p.campaigns.filter(c=>c.roas!=null).sort((a,b)=>a.roas-b.roas);
+  if (roasChart) roasChart.destroy();
+  roasChart = new Chart(document.getElementById('roasChart'), {
+    type:'bar',
+    data:{ labels:withRoas.map(c=>c.name), datasets:[{
+      label:'ROAS', data:withRoas.map(c=>c.roas),
+      backgroundColor:withRoas.map(c=>c.roas>=1?'rgba(16,185,129,.65)':'rgba(239,68,68,.65)'),
+      borderColor:withRoas.map(c=>c.roas>=1?G:R), borderWidth:1, borderRadius:5, barThickness:40,
+    }]},
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{backgroundColor:'#1a1a2e',borderColor:'#2a2a45',borderWidth:1,
+          callbacks:{label:ctx=>` ROAS: ${ctx.raw.toFixed(2)}x`}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:M,font:{size:10},callback:v=>v+'x'},min:0},
+        y:{grid:{display:false},ticks:{color:'#c8c8e0',font:{size:12,weight:'600'}}},
+      },
+    },
+  });
+}
+
+// ── Spend vs Revenue ──────────────────────────────────────────────────────────
+function buildSRChart(p) {
+  const bySp = [...p.campaigns].sort((a,b)=>b.spend-a.spend);
+  if (srChart) srChart.destroy();
+  srChart = new Chart(document.getElementById('srChart'), {
+    type:'bar',
+    data:{ labels:bySp.map(c=>c.name), datasets:[
+      { label:'Gasto',    data:bySp.map(c=>Math.round(c.spend)),   backgroundColor:'rgba(129,140,248,.7)', borderColor:I, borderWidth:1, borderRadius:4 },
+      { label:'Ingresos', data:bySp.map(c=>Math.round(c.revenue)), backgroundColor:'rgba(16,185,129,.7)',  borderColor:G, borderWidth:1, borderRadius:4 },
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:M,font:{size:11},usePointStyle:true,padding:16}},
+        tooltip:{backgroundColor:'#1a1a2e',borderColor:'#2a2a45',borderWidth:1,
+          callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtARS(ctx.raw)}`}},
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{color:M,font:{size:11}}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:M,font:{size:10},callback:v=>fmtARSm(v)}},
+      },
+    },
+  });
+}
+
+// ── Master render ─────────────────────────────────────────────────────────────
+function renderDashboard(periodKey) {
+  const p = DATA.periods[periodKey];
+  document.getElementById('hdr-period').textContent = p.dateRange;
+  renderKPIs(p);
+  renderAlert(p);
+  renderTable(p);
+  renderInsights(p);
+  buildTrendChart(p);
+  buildRoasChart(p);
+  buildSRChart(p);
+}
+
+document.querySelectorAll('.period-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderDashboard(btn.dataset.period);
+  });
+});
+
+renderDashboard('30d');
+</script>
+</body>
+</html>
