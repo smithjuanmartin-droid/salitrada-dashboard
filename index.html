@@ -34,6 +34,13 @@
     .period-btn { font-size: 11px; font-weight: 600; padding: 5px 11px; border-radius: 7px; border: none; cursor: pointer; background: transparent; color: var(--muted); transition: all .18s; white-space: nowrap; }
     .period-btn:hover { color: var(--text); background: rgba(255,255,255,.06); }
     .period-btn.active { background: var(--card); color: var(--text); box-shadow: 0 1px 6px rgba(0,0,0,.4); border: 1px solid var(--border2); }
+    .picker-wrap { position: relative; }
+    .date-picker-popup { position: absolute; top: calc(100% + 10px); right: 0; background: #131322; border: 1px solid var(--border2); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 32px rgba(0,0,0,.65); z-index: 200; white-space: nowrap; }
+    .date-picker-popup input[type="date"] { background: rgba(255,255,255,.05); border: 1px solid var(--border2); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit; outline: none; cursor: pointer; color-scheme: dark; }
+    .date-picker-popup input[type="date"]:focus { border-color: rgba(129,140,248,.5); }
+    .dp-apply { background: rgba(129,140,248,.2); border: 1px solid rgba(129,140,248,.4); color: var(--indigo); border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .15s; }
+    .dp-apply:hover { background: rgba(129,140,248,.32); }
+    .dp-sep { color: var(--muted); }
     main { padding: 32px 0; }
     .section { margin-bottom: 32px; }
     .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
@@ -100,11 +107,20 @@
         </div>
       </div>
       <div class="header-right">
-        <div class="period-selector">
-          <button class="period-btn" data-period="1d">Ayer</button>
-          <button class="period-btn" data-period="7d">7 días</button>
-          <button class="period-btn" data-period="14d">14 días</button>
-          <button class="period-btn active" data-period="30d">30 días</button>
+        <div class="picker-wrap">
+          <div class="period-selector">
+            <button class="period-btn" data-period="1d">Ayer</button>
+            <button class="period-btn" data-period="7d">7 días</button>
+            <button class="period-btn" data-period="14d">14 días</button>
+            <button class="period-btn active" data-period="30d">30 días</button>
+            <button class="period-btn" id="custom-toggle">📅 Rango</button>
+          </div>
+          <div class="date-picker-popup" id="date-picker-popup" style="display:none">
+            <input type="date" id="dp-from">
+            <span class="dp-sep">—</span>
+            <input type="date" id="dp-to">
+            <button class="dp-apply" id="dp-apply">Aplicar</button>
+          </div>
         </div>
         <span class="badge badge-blue">Meta Ads</span>
         <span class="badge badge-green" id="hdr-updated"></span>
@@ -519,12 +535,135 @@ function renderDashboard(periodKey) {
   buildSRChart(p);
 }
 
-document.querySelectorAll('.period-btn').forEach(btn => {
+document.querySelectorAll('.period-btn[data-period]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
+    document.getElementById('date-picker-popup').style.display = 'none';
+    // Restaurar canvases si fueron ocultados por rango personalizado
+    document.getElementById('roasChart').style.display = '';
+    document.getElementById('srChart').style.display = '';
+    document.getElementById('roas-placeholder')?.remove();
+    document.getElementById('sr-placeholder')?.remove();
     renderDashboard(btn.dataset.period);
   });
+});
+
+// ── Custom date range ─────────────────────────────────────────────────────────
+const ES_MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function dailyEntryToDate(entry) {
+  const [day, monStr] = entry.d.split(' ');
+  const mon = ES_MONTHS.indexOf(monStr);
+  const baseYear = parseInt(DATA.lastUpdated.substring(0, 4));
+  const curMon   = new Date(DATA.lastUpdated).getMonth();
+  const year = mon > curMon + 2 ? baseYear - 1 : baseYear;
+  return new Date(year, mon, parseInt(day));
+}
+
+document.getElementById('custom-toggle').addEventListener('click', e => {
+  e.stopPropagation();
+  const popup = document.getElementById('date-picker-popup');
+  const visible = popup.style.display !== 'none';
+  popup.style.display = visible ? 'none' : 'flex';
+  if (!visible) {
+    const to   = new Date(DATA.lastUpdated);
+    const from = new Date(to); from.setDate(from.getDate() - 6);
+    document.getElementById('dp-to').value   = to.toISOString().slice(0, 10);
+    document.getElementById('dp-from').value = from.toISOString().slice(0, 10);
+  }
+});
+
+document.getElementById('dp-apply').addEventListener('click', () => {
+  const fromVal = document.getElementById('dp-from').value;
+  const toVal   = document.getElementById('dp-to').value;
+  if (!fromVal || !toVal || fromVal > toVal) { alert('Fechas inválidas.'); return; }
+
+  const fromD = new Date(fromVal + 'T00:00:00');
+  const toD   = new Date(toVal   + 'T23:59:59');
+  const slice = DATA.daily.filter(e => { const d = dailyEntryToDate(e); return d >= fromD && d <= toD; });
+
+  if (slice.length === 0) { alert('Sin datos para ese rango. Los datos cubren los últimos 30 días.'); return; }
+
+  const totalSpend   = slice.reduce((s, d) => s + d.spend, 0);
+  const roasDays     = slice.filter(d => d.roas != null);
+  const weightedRoas = roasDays.length
+    ? roasDays.reduce((s, d) => s + d.roas * d.spend, 0) / roasDays.reduce((s, d) => s + d.spend, 0)
+    : null;
+  const totalRevenue = weightedRoas ? totalSpend * weightedRoas : 0;
+  const days         = Math.round((toD - fromD) / 86400000) + 1;
+
+  const fmtD = d => `${d.getDate()} ${ES_MONTHS[d.getMonth()]}`;
+  const label = fromVal === toVal ? fmtD(fromD) : `${fmtD(fromD)} – ${fmtD(toD)} ${toD.getFullYear()}`;
+
+  const customP = {
+    label: 'Personalizado', dateRange: label, days, isCustom: true,
+    summary: { totalSpend, totalRevenue, blendedRoas: weightedRoas, trackedRoas: null, campaignCount: '—' },
+    campaigns: [],
+    dailySlice: slice,
+  };
+
+  document.getElementById('date-picker-popup').style.display = 'none';
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('custom-toggle').classList.add('active');
+
+  // Render custom
+  document.getElementById('hdr-period').textContent = label;
+  renderKPIs(customP);
+  document.getElementById('alert-box').innerHTML = '';
+  // Campaign table placeholder
+  document.getElementById('camp-table').innerHTML = `
+    <div style="padding:32px;text-align:center;color:var(--muted);font-size:13px">
+      El detalle por campaña no está disponible para rangos personalizados.<br>
+      <span style="font-size:12px">Seleccioná uno de los períodos predefinidos para ver el desglose por campaña.</span>
+    </div>`;
+  document.getElementById('insights-grid').innerHTML = '';
+  // Trend chart with custom slice
+  document.getElementById('trend-sub').textContent = `Gasto diario · ${label}`;
+  const bgC = customP.dailySlice.map(() => 'rgba(129,140,248,.55)');
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(document.getElementById('trendChart'), {
+    type: 'bar',
+    data: { labels: slice.map(d => d.d), datasets: [
+      { label:'Gasto (miles ARS)', data: slice.map(d => Math.round(d.spend/1000)),
+        backgroundColor: bgC, borderColor:'rgba(129,140,248,.7)', borderWidth:1, borderRadius:3, yAxisID:'y1', order:2 },
+      { label:'ROAS', data: slice.map(d => d.roas), type:'line',
+        borderColor:G, backgroundColor:'transparent', pointBackgroundColor:G, pointRadius:4,
+        borderWidth:2.5, tension:0.35, yAxisID:'y2', order:1, spanGaps:false },
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:M,font:{size:11},usePointStyle:true,padding:16}},
+        tooltip:{backgroundColor:'#1a1a2e',borderColor:'#2a2a45',borderWidth:1,padding:10,
+          callbacks:{label:ctx=>ctx.dataset.label==='ROAS'
+            ? ` ROAS: ${ctx.raw!=null?ctx.raw.toFixed(2)+'x':'—'}`
+            : ` Gasto: $${ctx.raw}k ARS`}},
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{color:M,font:{size:9},maxRotation:45,minRotation:45}},
+        y1:{position:'left',grid:{color:'rgba(255,255,255,.04)'},ticks:{color:M,font:{size:10},callback:v=>'$'+v+'k'}},
+        y2:{position:'right',grid:{display:false},ticks:{color:G,font:{size:10},callback:v=>v+'x'},min:0},
+      },
+    },
+  });
+  // ROAS chart placeholder
+  if (roasChart) roasChart.destroy();
+  roasChart = null;
+  document.getElementById('roasChart').style.display = 'none';
+  document.getElementById('roasChart').parentElement.insertAdjacentHTML('beforeend',
+    '<div id="roas-placeholder" style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--muted);font-size:12px">Disponible solo en períodos predefinidos</div>');
+  // SR chart placeholder
+  if (srChart) srChart.destroy();
+  srChart = null;
+  document.getElementById('srChart').style.display = 'none';
+  document.getElementById('srChart').parentElement.insertAdjacentHTML('beforeend',
+    '<div id="sr-placeholder" style="display:flex;align-items:center;justify-content:center;height:180px;color:var(--muted);font-size:12px">Disponible solo en períodos predefinidos</div>');
+});
+
+document.addEventListener('click', e => {
+  if (!document.querySelector('.picker-wrap').contains(e.target))
+    document.getElementById('date-picker-popup').style.display = 'none';
 });
 
 renderDashboard('30d');
