@@ -67,7 +67,7 @@
     .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
     .alert { border-radius: 14px; padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; margin-bottom: 32px; }
     .chart-box    { position: relative; height: 240px; width: 100%; }
-    .chart-box-lg { position: relative; height: 220px; width: 100%; }
+    .chart-box-lg { position: relative; height: 320px; width: 100%; }
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     thead tr { border-bottom: 1px solid var(--border); }
@@ -505,18 +505,18 @@ function buildSRChart(p) {
   srChart = new Chart(document.getElementById('srChart'), {
     type:'bar',
     data:{ labels:bySp.map(c=>c.name), datasets:[
-      { label:'Gasto',    data:bySp.map(c=>Math.round(c.spend)),   backgroundColor:'rgba(129,140,248,.7)', borderColor:I, borderWidth:1, borderRadius:4 },
-      { label:'Ingresos', data:bySp.map(c=>Math.round(c.revenue)), backgroundColor:'rgba(16,185,129,.7)',  borderColor:G, borderWidth:1, borderRadius:4 },
+      { label:'Gasto',    data:bySp.map(c=>Math.round(c.spend)),   backgroundColor:'rgba(129,140,248,.65)', borderColor:I, borderWidth:1, borderRadius:4, barThickness:22 },
+      { label:'Ingresos', data:bySp.map(c=>Math.round(c.revenue)), backgroundColor:'rgba(16,185,129,.65)',  borderColor:G, borderWidth:1, borderRadius:4, barThickness:22 },
     ]},
-    options:{ responsive:true, maintainAspectRatio:false,
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
       plugins:{
         legend:{labels:{color:M,font:{size:11},usePointStyle:true,padding:16}},
-        tooltip:{backgroundColor:'#1a1a2e',borderColor:'#2a2a45',borderWidth:1,
-          callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtARS(ctx.raw)}`}},
+        tooltip:{backgroundColor:'#1a1a2e',borderColor:'#2a2a45',borderWidth:1,padding:10,
+          callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtARSm(ctx.raw)}`}},
       },
       scales:{
-        x:{grid:{display:false},ticks:{color:M,font:{size:11}}},
-        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:M,font:{size:10},callback:v=>fmtARSm(v)}},
+        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:M,font:{size:10},callback:v=>fmtARSm(v)}},
+        y:{grid:{display:false},ticks:{color:'#c8c8e0',font:{size:12,weight:'600'}}},
       },
     },
   });
