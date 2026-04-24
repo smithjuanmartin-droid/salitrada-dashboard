@@ -191,19 +191,18 @@
 <script>
 /* ====== DATA START ====== */
 const DATA = {
-  lastUpdated: "2026-04-21T08:00:00",
+  lastUpdated: "2026-04-24T00:00:00",
   daily: [
-    {d:"22 Mar",spend:57899,roas:3.94}, {d:"23 Mar",spend:53224,roas:7.83}, {d:"24 Mar",spend:57049,roas:null},
-    {d:"25 Mar",spend:46772,roas:3.16}, {d:"26 Mar",spend:52061,roas:null}, {d:"27 Mar",spend:53855,roas:null},
-    {d:"28 Mar",spend:37314,roas:null}, {d:"29 Mar",spend:53192,roas:5.25}, {d:"30 Mar",spend:40884,roas:3.82},
-    {d:"31 Mar",spend:54186,roas:null}, {d:"1 Abr", spend:61482,roas:null}, {d:"2 Abr", spend:75599,roas:4.88},
-    {d:"3 Abr", spend:39169,roas:7.61}, {d:"4 Abr", spend:28396,roas:7.08}, {d:"5 Abr", spend:49749,roas:2.60},
-    {d:"6 Abr", spend:48105,roas:null}, {d:"7 Abr", spend:49723,roas:10.82},{d:"8 Abr", spend:58790,roas:17.12},
-    {d:"9 Abr", spend:54787,roas:null}, {d:"10 Abr",spend:56118,roas:null}, {d:"11 Abr",spend:53010,roas:null},
-    {d:"12 Abr",spend:63821,roas:4.66}, {d:"13 Abr",spend:57398,roas:3.64}, {d:"14 Abr",spend:57126,roas:1.45},
-    {d:"15 Abr",spend:59531,roas:6.26}, {d:"16 Abr",spend:56298,roas:1.27}, {d:"17 Abr",spend:54868,roas:3.83},
-    {d:"18 Abr",spend:49544,roas:5.72}, {d:"19 Abr",spend:67902,roas:4.33}, {d:"20 Abr",spend:57270,roas:1.44},
-    {d:"21 Abr",spend:8025, roas:null},
+    {d:"26 Mar",spend:52061,roas:null}, {d:"27 Mar",spend:53855,roas:null}, {d:"28 Mar",spend:37314,roas:null},
+    {d:"29 Mar",spend:53192,roas:5.25}, {d:"30 Mar",spend:40884,roas:3.82}, {d:"31 Mar",spend:54186,roas:null},
+    {d:"1 Abr", spend:61482,roas:null}, {d:"2 Abr", spend:75599,roas:4.88}, {d:"3 Abr", spend:39169,roas:7.61},
+    {d:"4 Abr", spend:28396,roas:7.08}, {d:"5 Abr", spend:49749,roas:2.60}, {d:"6 Abr", spend:48105,roas:null},
+    {d:"7 Abr", spend:49723,roas:10.82},{d:"8 Abr", spend:58790,roas:17.12},{d:"9 Abr", spend:54787,roas:null},
+    {d:"10 Abr",spend:56118,roas:null}, {d:"11 Abr",spend:53010,roas:null}, {d:"12 Abr",spend:63821,roas:4.66},
+    {d:"13 Abr",spend:57398,roas:3.64}, {d:"14 Abr",spend:57126,roas:1.45}, {d:"15 Abr",spend:59531,roas:6.26},
+    {d:"16 Abr",spend:56298,roas:1.27}, {d:"17 Abr",spend:54868,roas:3.83}, {d:"18 Abr",spend:49544,roas:5.72},
+    {d:"19 Abr",spend:67902,roas:4.33}, {d:"20 Abr",spend:57292,roas:1.44}, {d:"21 Abr",spend:56566,roas:1.19},
+    {d:"22 Abr",spend:57818,roas:3.65}, {d:"23 Abr",spend:47102,roas:4.67}, {d:"24 Abr",spend:27865,roas:null},
   ],
   periods: {
     "1d": {
@@ -237,14 +236,14 @@ const DATA = {
       ],
     },
     "30d": {
-      label:"Últ. 30 días", dateRange:"22 Mar – 20 Abr 2026", days:30,
-      summary:{ totalSpend:1605122, totalRevenue:5674430, blendedRoas:3.54, trackedRoas:4.46, campaignCount:5 },
+      label:"Últ. 30 días", dateRange:"26 Mar – 24 Abr 2026", days:30,
+      summary:{ totalSpend:1579551, totalRevenue:5379143, blendedRoas:3.41, trackedRoas:3.88, campaignCount:5 },
       campaigns:[
-        { name:"Ad+ V2026",          full:"Verano 2026 · Nueva Temporada · Ad+",           spend:1182323.51, revenue:5120914, roas:4.331, cpm:8192, ctr:3.27, cpc:251, reach:25481, freq:5.66, tracked:true  },
-        { name:"Carrito Abandonado", full:"Conversiones · Remarketing Carrito Abandonado",  spend:89774.49,   revenue:553516,  roas:6.166, cpm:7147, ctr:3.32, cpc:215, reach:1182,  freq:10.63,tracked:true  },
-        { name:"Rmkt V2026",         full:"Verano 2026 · Nueva Temporada · Remarketing",     spend:105454.35,  revenue:0,       roas:null,  cpm:7591, ctr:2.60, cpc:292, reach:5494,  freq:2.53, tracked:false },
-        { name:"Interacción",        full:"Interacción · Aumentar Alcance Orgánico",         spend:139571.98,  revenue:0,       roas:null,  cpm:540,  ctr:0.79, cpc:69,  reach:185733,freq:1.39, tracked:false },
-        { name:"V2025 Sale",         full:"Verano 2025 · Sale Trajes de Baño · Remarketing", spend:87997.66,   revenue:0,       roas:null,  cpm:6569, ctr:3.43, cpc:192, reach:4812,  freq:2.78, tracked:false },
+        { name:"Ad+ V2026",          full:"Verano 2026 · Nueva Temporada · Ad+",           spend:1195769.32, revenue:4846379, roas:4.053, cpm:8363, ctr:3.25, cpc:257, reach:26561, freq:5.38, tracked:true  },
+        { name:"Carrito Abandonado", full:"Conversiones · Remarketing Carrito Abandonado",  spend:84876.55,   revenue:398000,  roas:4.689, cpm:7214, ctr:3.21, cpc:225, reach:1175,  freq:10.01,tracked:true  },
+        { name:"Rmkt V2026",         full:"Verano 2026 · Nueva Temporada · Remarketing",     spend:104729.33,  revenue:134764,  roas:1.287, cpm:7518, ctr:2.59, cpc:290, reach:5180,  freq:2.69, tracked:true  },
+        { name:"Interacción",        full:"Interacción · Aumentar Alcance Orgánico",         spend:139022.18,  revenue:0,       roas:null,  cpm:541,  ctr:0.81, cpc:66,  reach:185619,freq:1.39, tracked:false },
+        { name:"V2025 Sale",         full:"Verano 2025 · Sale Trajes de Baño · Remarketing", spend:55153.91,   revenue:0,       roas:null,  cpm:6968, ctr:3.66, cpc:190, reach:3484,  freq:2.27, tracked:false },
       ],
     },
   },
