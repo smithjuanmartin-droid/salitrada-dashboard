@@ -1,5 +1,6 @@
 import json
-import subprocess
+import urllib.request
+import urllib.parse
 from datetime import datetime, timezone, timedelta
 from flask import Flask, jsonify
 from flask_cors import CORS
@@ -14,33 +15,35 @@ META_ACCOUNT = "25788023964160178"
 
 ART = timezone(timedelta(hours=-3))
 
+def http_get(url, headers=None):
+    req = urllib.request.Request(url, headers=headers or {})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.loads(resp.read().decode())
+
 def fetch_tn_orders(since_ts, until_ts):
     url = (
         f"https://api.tiendanube.com/v1/{TN_USER_ID}/orders"
         f"?payment_status=paid&created_at_min={since_ts}&created_at_max={until_ts}"
         f"&per_page=200&fields=id,total,created_at"
     )
-    cmd = ["curl", "-s", "-m", "30", "-H", f"Authentication: bearer {TN_TOKEN}",
-           "-H", "User-Agent: Salitrada/1.0", url]
-    result = subprocess.run(cmd, capture_output=True, text=True)
     try:
-        data = json.loads(result.stdout)
+        data = http_get(url, {
+            "Authentication": f"bearer {TN_TOKEN}",
+            "User-Agent": "Salitrada/1.0"
+        })
+        return data if isinstance(data, list) else []
     except Exception:
         return []
-    if isinstance(data, list):
-        return data
-    return []
 
 def fetch_meta_spend(date_str):
-    url = (
-        f"https://graph.facebook.com/v20.0/act_{META_ACCOUNT}/insights"
-        f"?fields=spend&time_range={{\"since\":\"{date_str}\",\"until\":\"{date_str}\"}}"
-        f"&access_token={META_TOKEN}"
-    )
-    cmd = ["curl", "-s", "-m", "30", url]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    params = urllib.parse.urlencode({
+        "fields": "spend",
+        "time_range": json.dumps({"since": date_str, "until": date_str}),
+        "access_token": META_TOKEN
+    })
+    url = f"https://graph.facebook.com/v20.0/act_{META_ACCOUNT}/insights?{params}"
     try:
-        data = json.loads(result.stdout)
+        data = http_get(url)
         items = data.get("data", [])
         if items:
             return float(items[0].get("spend", 0))
@@ -53,7 +56,6 @@ def ventas():
     now_art = datetime.now(ART)
     today_str = now_art.strftime("%Y-%m-%d")
 
-    # Today: midnight ART = 03:00 UTC
     day_start_utc = datetime(now_art.year, now_art.month, now_art.day,
                              tzinfo=ART).astimezone(timezone.utc)
     since_ts = day_start_utc.strftime("%Y-%m-%dT%H:%M:%S")
