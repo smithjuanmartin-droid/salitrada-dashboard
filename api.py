@@ -77,15 +77,17 @@ def ventas():
     meta_spend = fetch_meta_spend(today_str)
     roas = round(total / meta_spend, 2) if meta_spend > 0 else None
 
-    # Last 14 days comparison (same hour)
+    # Last 14 days comparison (same hour) + full-day meta spend
     comparacion = []
     for i in range(1, 15):
         past_date = now_art - timedelta(days=i)
         venta, ordenes = day_sales_until_hour(past_date, now_art)
+        meta = fetch_meta_spend(past_date.strftime("%Y-%m-%d"))
         comparacion.append({
             "label": past_date.strftime("%a %d/%m"),
             "ventas": venta,
-            "ordenes": ordenes
+            "ordenes": ordenes,
+            "meta_gasto": round(meta)
         })
 
     return jsonify({
@@ -151,6 +153,7 @@ function load(){
         <td>${c.label}</td>
         <td>${fmt(c.ventas)}</td>
         <td>${c.ordenes}</td>
+        <td style="color:#ffd600">${c.meta_gasto ? fmt(c.meta_gasto) : '-'}</td>
       </tr>`).join('');
     document.getElementById('data').innerHTML = `
       <div class="card">
@@ -160,7 +163,7 @@ function load(){
       </div>
       <div class="grid">
         <div class="card">
-          <div class="label">Meta gasto</div>
+          <div class="label">Meta hoy (parcial)</div>
           <div class="value yellow">${fmt(d.meta_gasto)}</div>
         </div>
         <div class="card">
@@ -171,8 +174,8 @@ function load(){
       <div class="card">
         <div class="label">Últimas 2 semanas · misma hora</div>
         <table>
-          <tr><th>Día</th><th>Ventas</th><th>Órd.</th></tr>
-          <tr class="hoy-row"><td>Hoy</td><td>${fmt(d.ventas)}</td><td>${d.ordenes}</td></tr>
+          <tr><th>Día</th><th>Ventas</th><th>Órd.</th><th>Meta</th></tr>
+          <tr class="hoy-row"><td>Hoy</td><td>${fmt(d.ventas)}</td><td>${d.ordenes}</td><td style="color:#ffd600">${fmt(d.meta_gasto)}</td></tr>
           ${rows}
         </table>
       </div>`;
