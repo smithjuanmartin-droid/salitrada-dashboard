@@ -114,9 +114,9 @@ def index():
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:#0a0a0a; color:#fff; font-family:-apple-system,sans-serif; }
 .container { width:100%; max-width:420px; margin:0 auto; padding:24px; }
-h1 { font-size:13px; letter-spacing:4px; color:#555; text-transform:uppercase; margin-bottom:28px; text-align:center; padding-top:16px; }
+h1 { font-size:13px; letter-spacing:4px; color:#888; text-transform:uppercase; margin-bottom:28px; text-align:center; padding-top:16px; }
 .card { background:#111; border-radius:16px; padding:20px; margin-bottom:12px; }
-.label { font-size:10px; color:#555; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; }
+.label { font-size:10px; color:#888; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; }
 .value { font-size:34px; font-weight:700; }
 .green { color:#00e676; }
 .yellow { color:#ffd600; }
@@ -126,10 +126,10 @@ h1 { font-size:13px; letter-spacing:4px; color:#555; text-transform:uppercase; m
 .grid .value { font-size:22px; }
 .updated { text-align:center; font-size:11px; color:#333; margin:16px 0 8px; }
 table { width:100%; border-collapse:collapse; font-size:13px; }
-th { color:#555; font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:6px 8px; text-align:right; }
+th { color:#888; font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:6px 8px; text-align:right; }
 th:first-child { text-align:left; }
-td { padding:8px 8px; border-top:1px solid #1a1a1a; text-align:right; color:#aaa; }
-td:first-child { text-align:left; color:#666; }
+td { padding:8px 8px; border-top:1px solid #222; text-align:right; color:#ccc; }
+td:first-child { text-align:left; color:#999; }
 .hoy-row td { color:#fff; font-weight:600; }
 .hoy-row td:nth-child(2) { color:#00e676; }
 .refresh-btn { display:block; width:100%; background:#1a1a1a; color:#555; border:none; border-radius:12px; padding:12px; font-size:12px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; margin-top:16px; }
