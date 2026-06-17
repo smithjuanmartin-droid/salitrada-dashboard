@@ -51,6 +51,15 @@ def fetch_meta_spend(date_str):
         pass
     return 0.0
 
+def day_sales_full(date_art):
+    day_start = datetime(date_art.year, date_art.month, date_art.day, tzinfo=ART)
+    day_end = datetime(date_art.year, date_art.month, date_art.day, 23, 59, 59, tzinfo=ART)
+    since_ts = day_start.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+    until_ts = day_end.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+    orders = fetch_tn_orders(since_ts, until_ts)
+    total = sum(float(o.get("total", 0)) for o in orders)
+    return round(total)
+
 def day_sales_until_hour(date_art, until_hour_art):
     day_start = datetime(date_art.year, date_art.month, date_art.day, tzinfo=ART)
     day_end = datetime(date_art.year, date_art.month, date_art.day,
@@ -83,11 +92,14 @@ def ventas():
         past_date = now_art - timedelta(days=i)
         venta, ordenes = day_sales_until_hour(past_date, now_art)
         meta = fetch_meta_spend(past_date.strftime("%Y-%m-%d"))
+        ventas_full = day_sales_full(past_date)
+        roas_final = round(ventas_full / meta, 2) if meta > 0 else None
         comparacion.append({
             "label": past_date.strftime("%a %d/%m"),
             "ventas": venta,
             "ordenes": ordenes,
-            "meta_gasto": round(meta)
+            "meta_gasto": round(meta),
+            "roas_final": roas_final
         })
 
     return jsonify({
@@ -154,6 +166,7 @@ function load(){
         <td>${fmt(c.ventas)}</td>
         <td>${c.ordenes}</td>
         <td style="color:#ffd600">${c.meta_gasto ? fmt(c.meta_gasto) : '-'}</td>
+        <td style="color:#ffd600">${c.roas_final ? c.roas_final+'x' : '-'}</td>
       </tr>`).join('');
     document.getElementById('data').innerHTML = `
       <div class="card">
@@ -174,8 +187,8 @@ function load(){
       <div class="card">
         <div class="label">Últimas 2 semanas · misma hora</div>
         <table>
-          <tr><th>Día</th><th>Ventas</th><th>Órd.</th><th>Meta</th></tr>
-          <tr class="hoy-row"><td>Hoy</td><td>${fmt(d.ventas)}</td><td>${d.ordenes}</td><td style="color:#ffd600">${fmt(d.meta_gasto)}</td></tr>
+          <tr><th>Día</th><th>Ventas</th><th>Órd.</th><th>Meta</th><th>ROAS</th></tr>
+          <tr class="hoy-row"><td>Hoy</td><td>${fmt(d.ventas)}</td><td>${d.ordenes}</td><td style="color:#ffd600">${fmt(d.meta_gasto)}</td><td style="color:#ffd600">${d.roas ? d.roas+'x' : '-'}</td></tr>
           ${rows}
         </table>
       </div>`;
