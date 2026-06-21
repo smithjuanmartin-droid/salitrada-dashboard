@@ -21,19 +21,28 @@ def http_get(url, headers=None):
         return json.loads(resp.read().decode())
 
 def fetch_tn_orders(since_ts, until_ts):
-    url = (
-        f"https://api.tiendanube.com/v1/{TN_USER_ID}/orders"
-        f"?payment_status=paid&created_at_min={since_ts}&created_at_max={until_ts}"
-        f"&per_page=200&fields=id,total,created_at"
-    )
-    try:
-        data = http_get(url, {
-            "Authentication": f"bearer {TN_TOKEN}",
-            "User-Agent": "Salitrada/1.0"
-        })
-        return data if isinstance(data, list) else []
-    except Exception:
-        return []
+    all_orders = []
+    page = 1
+    while True:
+        url = (
+            f"https://api.tiendanube.com/v1/{TN_USER_ID}/orders"
+            f"?payment_status=paid&created_at_min={since_ts}&created_at_max={until_ts}"
+            f"&per_page=200&page={page}&fields=id,total,created_at"
+        )
+        try:
+            data = http_get(url, {
+                "Authentication": f"bearer {TN_TOKEN}",
+                "User-Agent": "Salitrada/1.0"
+            })
+            if not isinstance(data, list) or len(data) == 0:
+                break
+            all_orders.extend(data)
+            if len(data) < 200:
+                break
+            page += 1
+        except Exception:
+            break
+    return all_orders
 
 def fetch_meta_spend(date_str):
     params = urllib.parse.urlencode({
