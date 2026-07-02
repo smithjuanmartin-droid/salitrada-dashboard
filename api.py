@@ -1,4 +1,5 @@
 import json
+import threading
 import urllib.request
 import urllib.parse
 from datetime import datetime, timezone, timedelta
@@ -15,9 +16,10 @@ META_TOKEN = "EAASVCHqe8NABRibSS3Q6uTZCLrhCU5AvGaAQp8iBIKG8gTZC19DekTrGsT6rKDLoC
 META_ACCOUNT = "25788023964160178"
 
 ART = timezone(timedelta(hours=-3))
+REFRESH_SECONDS = 300  # refresh every 5 minutes
 
-# In-memory cache: {date_str: {"orders": [...], "meta": float, "cached_at": datetime}}
-_cache = {}
+_cached_response = None
+_cache_lock = threading.Lock()
 
 def http_get(url, headers=None):
     req = urllib.request.Request(url, headers=headers or {})
@@ -73,42 +75,34 @@ def fetch_meta_spend_batch(date_strs):
     except Exception:
         return {}
 
-def get_cached_day(date_art):
-    """Return cached orders for a past day. Cache never expires for closed days."""
-    date_str = date_art.strftime("%Y-%m-%d")
-    if date_str not in _cache:
-        orders = fetch_tn_orders_full_day(date_art)
-        _cache[date_str] = {"orders": orders}
-    return _cache[date_str]["orders"]
-
-@app.route("/api/ventas")
-def ventas():
+def build_response():
     now_art = datetime.now(ART)
     today_str = now_art.strftime("%Y-%m-%d")
     past_dates = [now_art - timedelta(days=i) for i in range(1, 15)]
     past_date_strs = [d.strftime("%Y-%m-%d") for d in past_dates]
 
-    # Fetch today's orders + Meta batch in parallel
     def fetch_today():
         return fetch_tn_orders_full_day(now_art)
 
     def fetch_meta():
         return fetch_meta_spend_batch([today_str] + past_date_strs)
 
-    # Check which past days need fetching
-    uncached = [d for d in past_dates if d.strftime("%Y-%m-%d") not in _cache]
+    past_orders = {}
+
+    def fetch_past(d):
+        return d, fetch_tn_orders_full_day(d)
 
     with ThreadPoolExecutor(max_workers=9) as executor:
         f_today = executor.submit(fetch_today)
         f_meta = executor.submit(fetch_meta)
-        f_past = {executor.submit(get_cached_day, d): d for d in uncached}
+        f_past_futures = {executor.submit(fetch_past, d): d for d in past_dates}
 
         today_orders_full = f_today.result()
         meta_batch = f_meta.result()
-        for f in as_completed(f_past):
-            f.result()  # just ensure cache is populated
+        for f in as_completed(f_past_futures):
+            d, orders = f.result()
+            past_orders[d] = orders
 
-    # Today stats up to now
     cutoff_utc = now_art.astimezone(timezone.utc)
     today_orders = [o for o in today_orders_full if parse_dt(o["created_at"]) <= cutoff_utc]
     total = sum(float(o.get("total", 0)) for o in today_orders)
@@ -116,28 +110,26 @@ def ventas():
     meta_spend = meta_batch.get(today_str, 0.0)
     roas = round(total / meta_spend, 2) if meta_spend > 0 else None
 
-    # Past days comparison (filter to same hour in Python)
     comparacion = []
     for past_date in past_dates:
         date_str = past_date.strftime("%Y-%m-%d")
-        orders = _cache.get(date_str, {}).get("orders", [])
+        orders = past_orders.get(past_date, [])
         cutoff = datetime(past_date.year, past_date.month, past_date.day,
                           now_art.hour, now_art.minute, now_art.second, tzinfo=ART)
         cutoff_utc_d = cutoff.astimezone(timezone.utc)
         partial = [o for o in orders if parse_dt(o["created_at"]) <= cutoff_utc_d]
-        venta_parcial = round(sum(float(o.get("total", 0)) for o in partial))
         ventas_full = round(sum(float(o.get("total", 0)) for o in orders))
         meta = meta_batch.get(date_str, 0.0)
         roas_final = round(ventas_full / meta, 2) if meta > 0 else None
         comparacion.append({
             "label": past_date.strftime("%a %d/%m"),
-            "ventas": venta_parcial,
+            "ventas": round(sum(float(o.get("total", 0)) for o in partial)),
             "ordenes": len(partial),
             "meta_gasto": round(meta),
             "roas_final": roas_final
         })
 
-    return jsonify({
+    return {
         "fecha": today_str,
         "hora": now_art.strftime("%H:%M"),
         "ventas": round(total),
@@ -147,7 +139,29 @@ def ventas():
         "roas": roas,
         "actualizado": now_art.strftime("%H:%M ART"),
         "comparacion": comparacion
-    })
+    }
+
+def refresh_loop():
+    global _cached_response
+    while True:
+        try:
+            data = build_response()
+            with _cache_lock:
+                _cached_response = data
+        except Exception:
+            pass
+        threading.Event().wait(REFRESH_SECONDS)
+
+# Start background refresh on startup
+threading.Thread(target=refresh_loop, daemon=True).start()
+
+@app.route("/api/ventas")
+def ventas():
+    with _cache_lock:
+        data = _cached_response
+    if data is None:
+        return jsonify({"error": "Cargando datos, intenta en 30 segundos..."}), 503
+    return jsonify(data)
 
 @app.route("/")
 def index():
@@ -194,6 +208,7 @@ function fmt(n){ return '$'+n.toLocaleString('es-AR'); }
 function load(){
   document.getElementById('ts').textContent = 'Actualizando...';
   fetch('/api/ventas?t='+Date.now()).then(r=>r.json()).then(d=>{
+    if(d.error){ document.getElementById('ts').textContent = d.error; setTimeout(load, 5000); return; }
     document.getElementById('ts').textContent = 'Actualizado ' + d.actualizado;
     let rows = d.comparacion.map(c=>`
       <tr>
