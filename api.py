@@ -2,6 +2,7 @@ import json
 import urllib.request
 import urllib.parse
 from datetime import datetime, timezone, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from flask import Flask, jsonify
 from flask_cors import CORS
 
@@ -26,8 +27,8 @@ def fetch_tn_orders(since_ts, until_ts):
     while True:
         url = (
             f"https://api.tiendanube.com/v1/{TN_USER_ID}/orders"
-            f"?payment_status=paid&created_at_min={since_ts}&created_at_max={until_ts}"
-            f"&per_page=200&page={page}&fields=id,total,created_at"
+            f"?created_at_min={since_ts}&created_at_max={until_ts}"
+            f"&per_page=200&page={page}&fields=id,total,created_at,payment_status"
         )
         try:
             data = http_get(url, {
@@ -95,21 +96,30 @@ def ventas():
     meta_spend = fetch_meta_spend(today_str)
     roas = round(total / meta_spend, 2) if meta_spend > 0 else None
 
-    # Last 14 days comparison (same hour) + full-day meta spend
-    comparacion = []
-    for i in range(1, 15):
-        past_date = now_art - timedelta(days=i)
+    # Last 14 days comparison (same hour) + full-day meta spend — parallelized
+    past_dates = [now_art - timedelta(days=i) for i in range(1, 15)]
+
+    def fetch_day(past_date):
         venta, ordenes = day_sales_until_hour(past_date, now_art)
         meta = fetch_meta_spend(past_date.strftime("%Y-%m-%d"))
         ventas_full = day_sales_full(past_date)
         roas_final = round(ventas_full / meta, 2) if meta > 0 else None
-        comparacion.append({
+        return past_date, {
             "label": past_date.strftime("%a %d/%m"),
             "ventas": venta,
             "ordenes": ordenes,
             "meta_gasto": round(meta),
             "roas_final": roas_final
-        })
+        }
+
+    results = {}
+    with ThreadPoolExecutor(max_workers=7) as executor:
+        futures = {executor.submit(fetch_day, d): d for d in past_dates}
+        for future in as_completed(futures):
+            past_date, row = future.result()
+            results[past_date] = row
+
+    comparacion = [results[d] for d in past_dates]
 
     return jsonify({
         "fecha": today_str,
