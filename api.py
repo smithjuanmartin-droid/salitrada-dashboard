@@ -44,7 +44,7 @@ def fetch_tn_orders_full_day(date_art):
         url = (
             f"https://api.tiendanube.com/v1/{TN_USER_ID}/orders"
             f"?created_at_min={since_ts}&created_at_max={until_ts}"
-            f"&per_page=200&page={page}&fields=id,total,created_at"
+            f"&per_page=200&page={page}&fields=id,total,created_at,payment_status"
         )
         try:
             data = http_get(url, {
@@ -59,7 +59,8 @@ def fetch_tn_orders_full_day(date_art):
             page += 1
         except Exception:
             break
-    return all_orders
+    # solo ventas pagadas
+    return [o for o in all_orders if o.get("payment_status") == "paid"]
 
 def fetch_meta_spend_batch(date_strs):
     time_ranges = json.dumps([{"since": d, "until": d} for d in date_strs])
